@@ -577,7 +577,15 @@ int zmk_keymap_save_changes(void) {
 
 static void load_stock_keymap_layer_ordering() {
     int i = 0;
+#if IS_ENABLED(CONFIG_ZMK_STUDIO)
+    /* Studio builds must include reserved layers so their layer IDs appear in
+     * keymap_layer_orders[]. Without this, any layer placed after a reserved
+     * node in the DTS is unreachable in zmk_keymap_position_state_changed(). */
+    DT_INST_FOREACH_CHILD(0, KEYMAP_LAYER_ORDER_INIT)
+#else
+    /* Non-Studio builds strip reserved layers to keep the ordering table lean. */
     DT_INST_FOREACH_CHILD_STATUS_OKAY(0, KEYMAP_LAYER_ORDER_INIT)
+#endif
     while (i < ZMK_KEYMAP_LAYERS_LEN) {
         keymap_layer_orders[i] = ZMK_KEYMAP_LAYER_ID_INVAL;
         i++;
